@@ -14,7 +14,7 @@ class SessionManager:
     ):
         self.running = True
         self.sessions = {}
-        self.ttl = 3600
+        self.ttl = 10800
         logging.debug("Starting reaper...")
         reaper = Thread(target=self.reaper, args=[])
         reaper.daemon = True
