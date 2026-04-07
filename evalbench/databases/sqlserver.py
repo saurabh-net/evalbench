@@ -55,8 +55,8 @@ class SQLServerDB(DB):
         logging.getLogger("pytds").setLevel(logging.ERROR)
         self.connector = Connector()
 
-        use_adc = not self.username and not self.password
-        if use_adc:
+        self.use_adc = not self.username and not self.password
+        if self.use_adc:
             self.username = get_adc_user_email()
 
         def get_conn():
@@ -66,7 +66,7 @@ class SQLServerDB(DB):
                 user=self.username,
                 password=self.password,
                 db=self.db_name,
-                enable_iam_auth=use_adc,
+                enable_iam_auth=self.use_adc,
             )
             return conn
 

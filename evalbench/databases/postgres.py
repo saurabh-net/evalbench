@@ -68,7 +68,7 @@ class PGDB(DB):
                 user=self.username,
                 password=effective_password,
                 db=self.db_name,
-                enable_iam_auth=use_adc,
+                enable_iam_auth=self.use_adc,
             )
             return conn
 

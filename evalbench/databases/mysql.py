@@ -58,8 +58,8 @@ class MySQLDB(DB):
 
         self.connector = Connector() if self.use_cloud_sql else None
 
-        use_adc = not self.username and not self.password
-        if use_adc:
+        self.use_adc = not self.username and not self.password
+        if self.use_adc:
             self.username = get_adc_user_email()
 
         def get_conn():
@@ -71,7 +71,7 @@ class MySQLDB(DB):
                     user=self.username,
                     password=self.password,
                     db=self.db_name,
-                    enable_iam_auth=use_adc,
+                    enable_iam_auth=self.use_adc,
                 )
             else:
                 # Local/Direct connection
