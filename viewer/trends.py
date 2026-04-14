@@ -135,6 +135,8 @@ def trends_component():
                     
                     requester = requester_row['value'].values[0] if not requester_row.empty else "unknown"
                     product = product_row['value'].values[0] if not product_row.empty else "unknown"
+                    dataset_path = configs_df[configs_df['config'] == 'experiment_config.dataset_config']['value'].values[0] if 'experiment_config.dataset_config' in configs_df['config'].values else "unknown"
+                    dataset = os.path.basename(dataset_path) if dataset_path != "unknown" else "unknown"
                     
                     summary_df = pd.read_csv(summary_file)
                     
@@ -157,10 +159,12 @@ def trends_component():
                         'run_time': run_time,
                         'requester': requester,
                         'product': product,
+                        'dataset': dataset,
                         'latency': latency,
                         'tokens': tokens,
                         'trajectory': trajectory,
-                        'job_id': d
+                        'job_id': d,
+                        'ai_score': 0.0
                     })
                 except Exception as e:
                     logging.error(f"Error reading data from {d}: {e}")
@@ -173,6 +177,9 @@ def trends_component():
         
     # Filter by requester
     df = df[df['requester'] == 'cloud-db-nl2sql-testing-jobs']
+    
+    # Create product_dataset column for combined line
+    df['product_dataset'] = df['product'] + " (" + df['dataset'] + ")"
     
     # Filter by product (remove unknown or empty)
     df = df[df['product'].notna() & (df['product'] != 'unknown') & (df['product'].str.strip() != '')]
@@ -191,9 +198,10 @@ def trends_component():
         return
         
     # Generate charts
-    latency_chart = generate_d3_chart(df, 'run_time', 'latency', 'product', 'Latency Trend', 'Latency (ms)')
-    token_chart = generate_d3_chart(df, 'run_time', 'tokens', 'product', 'Token Consumption Trend', 'Tokens')
-    trajectory_chart = generate_d3_chart(df, 'run_time', 'trajectory', 'product', 'Trajectory Score Trend', 'Score (%)')
+    latency_chart = generate_d3_chart(df, 'run_time', 'latency', 'product_dataset', 'Latency Trend', 'Latency (ms)')
+    token_chart = generate_d3_chart(df, 'run_time', 'tokens', 'product_dataset', 'Token Consumption Trend', 'Tokens')
+    trajectory_chart = generate_d3_chart(df, 'run_time', 'trajectory', 'product_dataset', 'Trajectory Score Trend', 'Score (%)')
+    ai_score_chart = generate_d3_chart(df, 'run_time', 'ai_score', 'product_dataset', 'AI Score Trend', 'Score')
 
     
     # Render charts
@@ -268,6 +276,9 @@ def trends_component():
                                 me.text(p, style=me.Style(color="#1f2937"))
         
         with me.box(style=me.Style(display="flex", flex_direction="column", gap="16px", width="100%")):
+            me.text("AI Score", style=me.Style(font_size="16px", font_weight="600"))
+            me.html(ai_score_chart, mode="sandboxed", style=me.Style(width="100%", height="550px"))
+            
             me.text("Latency", style=me.Style(font_size="16px", font_weight="600"))
             me.html(latency_chart, mode="sandboxed", style=me.Style(width="100%", height="550px"))
             

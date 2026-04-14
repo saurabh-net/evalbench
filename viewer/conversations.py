@@ -76,12 +76,14 @@ def conversations_component(
                             flex_direction="row",
                             gap="20px",
                             align_items="flex-start",
+                            flex_wrap="wrap",
                         )
                     ):
                         # --- Chat (left) ---
                         with me.box(
                             style=me.Style(
                                 flex="1",
+                                min_width="400px",
                                 display="flex",
                                 flex_direction="column",
                                 gap="16px",
@@ -198,6 +200,7 @@ def conversations_component(
                         with me.box(
                             style=me.Style(
                                 width="40%",
+                                min_width="300px",
                                 flex_shrink="0",
                                 display="flex",
                                 flex_direction="column",

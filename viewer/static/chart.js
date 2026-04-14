@@ -6,7 +6,7 @@ function drawChart() {
     const title = window.chartConfig.title;
     const ylabel = window.chartConfig.ylabel;
 
-    const margin = { top: 60, right: 180, bottom: 60, left: 60 };
+    const margin = { top: 60, right: 350, bottom: 60, left: 60 };
     const container = document.getElementById('chart-container');
     if (!container) return;
 
@@ -104,7 +104,7 @@ function drawChart() {
             .on("mouseover", function (event) {
                 d3.select(this).attr("r", 8).style("stroke-width", "3px");
                 tooltip.style("opacity", 1)
-                    .html(`<strong>Product:</strong> ${d[hueCol]}<br/><strong>Time:</strong> ${d[xCol]}<br/><strong>Value:</strong> ${d[yCol]}`);
+                    .html(`<strong>Product:</strong> ${d[hueCol]}<br/><strong>Time:</strong> ${d[xCol]}<br/><strong>Value:</strong> ${d[yCol]}<br/><strong>Eval ID:</strong> ${d.job_id}`);
             })
             .on("mousemove", function (event) {
                 tooltip.style("left", (event.pageX + 15) + "px")
@@ -113,6 +113,11 @@ function drawChart() {
             .on("mouseout", function () {
                 d3.select(this).attr("r", 5).style("stroke-width", "2px");
                 tooltip.style("opacity", 0);
+            })
+            .on("click", function(event, d) {
+                if (d && d.job_id) {
+                    window.open("/?job_id=" + d.job_id, "_blank");
+                }
             });
     });
 
@@ -154,7 +159,7 @@ function drawChart() {
         .attr("y", 6)
         .attr("dy", ".35em")
         .style("text-anchor", "start")
-        .text(d => d);
+        .text(d => d.replace('.json', ''));
 }
 
 // Initial draw

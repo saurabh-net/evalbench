@@ -28,6 +28,7 @@ class State:
     is_summarizing: bool = False
     ai_score: float = 0.0
     show_formula: bool = False
+    rows_to_show: int = 10
 
 try:
     # Try to read version from file (created during build)
@@ -411,7 +412,10 @@ def status_component():
                                     st.selected_main_tab = "List"
                                     st.product_filter = p_val
                                     st.dataset_filter = d_val
-                                handler.__name__ = f"click_status_row_{p_val}_{d_val}"
+                                
+                                safe_p = str(p_val).replace(" ", "_").replace(".", "_").replace("-", "_")
+                                safe_d = str(d_val).replace(" ", "_").replace(".", "_").replace("-", "_")
+                                handler.__name__ = f"click_status_row_{safe_p}_{safe_d}"
                                 return handler
                                 
                             click_handler = make_click_handler(product_val, dataset_val)
@@ -426,7 +430,6 @@ def status_component():
                             
                             if is_na:
                                 # Make cells gray for products with no data
-                                render_cell("N/A", color="#94a3b8", cell_bg="#e2e8f0")
                                 render_cell("N/A", color="#94a3b8", cell_bg="#e2e8f0")
                                 render_cell("N/A", color="#94a3b8", cell_bg="#e2e8f0")
                                 render_cell("N/A", color="#94a3b8", cell_bg="#e2e8f0")
@@ -461,7 +464,7 @@ def list_view_component(directories, results_dir):
     with me.box(
         style=me.Style(
             background="#ffffff",
-            padding=me.Padding.all("24px"),
+            padding=me.Padding.all("12px"),
             border_radius="12px",
             border=me.Border.all(
                 me.BorderSide(
@@ -581,6 +584,9 @@ def list_view_component(directories, results_dir):
                 return str(val)
     
             summaries.sort(key=get_sort_key, reverse=reverse)
+            
+            # Limit number of rows to show after filter/sort
+            summaries = summaries[:state.rows_to_show]
     
             # Extract unique values for filters from ALL summaries
             all_summaries = []
@@ -811,7 +817,9 @@ def list_view_component(directories, results_dir):
                         st.product_filter = val
                         st.open_dropdown = ""
     
-                    handler.__name__ = f"click_prod_dd_{val}"
+                    # Sanitize name for Mesop event routing
+                    safe_val = str(val).replace(" ", "_").replace(".", "_").replace("-", "_")
+                    handler.__name__ = f"click_prod_dd_{safe_val}"
                     return handler
     
                 mk_prod_dd = make_prod_dropdown_handler
@@ -912,7 +920,9 @@ def list_view_component(directories, results_dir):
                         st.requester_filter = val
                         st.open_dropdown = ""
     
-                    handler.__name__ = f"click_req_dd_{val}"
+                    # Sanitize name for Mesop event routing
+                    safe_val = str(val).replace(" ", "_").replace(".", "_").replace("-", "_")
+                    handler.__name__ = f"click_req_dd_{safe_val}"
                     return handler
     
                 mk_req_dd = make_req_dropdown_handler
@@ -1013,7 +1023,9 @@ def list_view_component(directories, results_dir):
                         st.dataset_filter = val
                         st.open_dropdown = ""
     
-                    handler.__name__ = f"click_dataset_dd_{val}"
+                    # Sanitize name for Mesop event routing
+                    safe_val = str(val).replace(" ", "_").replace(".", "_").replace("-", "_")
+                    handler.__name__ = f"click_dataset_dd_{safe_val}"
                     return handler
     
                 mk_dataset_dd = make_dataset_dropdown_handler
@@ -1099,6 +1111,109 @@ def list_view_component(directories, results_dir):
                                             color="#1f2937"
                                         ),
                                     )
+                
+                # Rows to Show Filter
+                def toggle_rows_dropdown(e: me.ClickEvent):
+                    st = me.state(State)
+                    if st.open_dropdown == "rows_to_show":
+                        st.open_dropdown = ""
+                    else:
+                        st.open_dropdown = "rows_to_show"
+    
+                def make_rows_handler(val):
+                    def handler(e: me.ClickEvent):
+                        st = me.state(State)
+                        st.rows_to_show = val
+                        st.open_dropdown = ""
+    
+                    handler.__name__ = f"click_rows_{val}"
+                    return handler
+    
+                with me.box(
+                    style=me.Style(
+                        position="relative",
+                        width="120px",
+                    )
+                ):
+                    # The Box acting as Dropdown Trigger
+                    with me.box(
+                        style=me.Style(
+                            background="#ffffff",
+                            border=me.Border.all(
+                                me.BorderSide(
+                                    width="1px",
+                                    color="#e2e8f0",
+                                )
+                            ),
+                            border_radius="4px",
+                            padding=me.Padding.all("8px"),
+                            cursor="pointer",
+                        ),
+                        on_click=toggle_rows_dropdown,
+                    ):
+                        me.text(
+                            f"Show: {state.rows_to_show}",
+                            style=me.Style(
+                                color="#1f2937"
+                            ),
+                        )
+    
+                    # The Popup List
+                    if state.open_dropdown == "rows_to_show":
+                        with me.box(
+                            style=me.Style(
+                                position="absolute",
+                                top="100%",
+                                left="0",
+                                z_index=10,
+                                background="#ffffff",
+                                border=me.Border.all(
+                                    me.BorderSide(
+                                        width="1px",
+                                        color="#e2e8f0",
+                                    )
+                                ),
+                                border_radius="4px",
+                                width="100%",
+                                max_height="200px",
+                                overflow_y="auto",
+                            )
+                        ):
+                            for opt in [5, 10, 20, 50, 100]:
+                                with me.box(
+                                    style=me.Style(
+                                        padding=me.Padding.all("8px"),
+                                        cursor="pointer",
+                                    ),
+                                    on_click=make_rows_handler(opt),
+                                ):
+                                    me.text(
+                                        str(opt),
+                                        style=me.Style(
+                                            color="#1f2937"
+                                        ),
+                                    )
+                
+                def on_reset_click(e: me.ClickEvent):
+                    st = me.state(State)
+                    st.eval_id_filter = ""
+                    st.product_filter = ""
+                    st.requester_filter = ""
+                    st.dataset_filter = ""
+                    st.open_dropdown = ""
+                
+                me.button(
+                    "Reset",
+                    on_click=on_reset_click,
+                    style=me.Style(
+                        background="#ef4444",
+                        color="#ffffff",
+                        font_weight="600",
+                        padding=me.Padding.symmetric(vertical="8px", horizontal="16px"),
+                        border_radius="4px",
+                        cursor="pointer",
+                    )
+                )
     
             def on_sort_click(col_name):
                 s = me.state(State)
@@ -1176,38 +1291,41 @@ def list_view_component(directories, results_dir):
                         ),
                         cursor="pointer",
                         width=h_width,
-                        white_space="nowrap" if h_width else None,
+                        white_space="normal",
                         background="#f8fafc",
                     ),
                     on_click=sort_handlers[h_col],
                 ):
+                    s = me.state(State)
+                    arrow = " ↓" if s.sort_descending else " ↑"
+                    arrow_str = arrow if s.sort_column == h_col else ""
+                    
+                    words = h_label.split(" ")
                     with me.box(
                         style=me.Style(
                             display="flex",
+                            flex_direction="column",
                             align_items="center",
                             justify_content="center",
                             color="#475569",
                         )
                     ):
-                        me.text(h_label)
-                        s = me.state(State)
-                        arrow = (
-                            " ↓" if s.sort_descending else " ↑"
-                        )
-                        arrow_str = (
-                            arrow
-                            if s.sort_column == h_col
-                            else ""
-                        )
-                        me.text(
-                            arrow_str,
-                            style=me.Style(
-                                font_weight="bold",
-                                color="#0284c7",
-                                font_size="14px",
-                                margin=me.Margin(left="4px"),
-                            ),
-                        )
+                        for i, w in enumerate(words):
+                            if i == len(words) - 1:
+                                with me.box(style=me.Style(display="flex", flex_direction="row", align_items="center")):
+                                    me.text(w)
+                                    if arrow_str:
+                                        me.text(
+                                            arrow_str,
+                                            style=me.Style(
+                                                font_weight="bold",
+                                                color="#0284c7",
+                                                font_size="14px",
+                                                margin=me.Margin(left="4px"),
+                                            ),
+                                        )
+                            else:
+                                me.text(w)
     
             with me.box(
                 style=me.Style(
@@ -1241,33 +1359,17 @@ def list_view_component(directories, results_dir):
                 ):
                     headers = [
                         ("Eval ID", "id", "36ch"),
-                        ("Date", "date", "24ch"),
-                        ("Product", "product", None),
-                        ("Requester", "requester", None),
-                        ("Dataset", "dataset", None),
-                        ("AI Score", "ai_score", "10ch"),
-                        (
-                            "Trajectory Matcher",
-                            "trajectory_matcher",
-                            "18ch",
-                        ),
-                        (
-                            "Goal Completion",
-                            "goal_completion",
-                            "16ch",
-                        ),
-                        ("Turn Count", "turn_count", "12ch"),
-                        ("Executable", "executable", "12ch"),
-                        (
-                            "Token Consumption",
-                            "token_consumption",
-                            "16ch",
-                        ),
-                        (
-                            "End-to-End Latency",
-                            "end_to_end_latency",
-                            "20ch",
-                        ),
+                        ("Date", "date", "20ch"),
+                        ("Product", "product", "12ch"),
+                        ("Requester", "requester", "12ch"),
+                        ("Dataset", "dataset", "15ch"),
+                        ("AI Score", "ai_score", "8ch"),
+                        ("Trajectory Matcher", "trajectory_matcher", "12ch"),
+                        ("Goal Completion", "goal_completion", "12ch"),
+                        ("Turn Count", "turn_count", "8ch"),
+                        ("Executable", "executable", "10ch"),
+                        ("Token Consumption", "token_consumption", "12ch"),
+                        ("End-to-End Latency", "end_to_end_latency", "12ch"),
                     ]
                     for label, col, width in headers:
                         render_header_cell(label, col, width)
@@ -1661,7 +1763,7 @@ def render_app_content():
         with me.box(
             style=me.Style(
                 background="#1e293b",
-                padding=me.Padding.symmetric(vertical="16px", horizontal="5%"),
+                padding=me.Padding.symmetric(vertical="8px", horizontal="5%"),
                 margin=me.Margin(bottom="24px"),
                 display="flex",
                 justify_content="space-between",
@@ -1946,19 +2048,29 @@ def render_app_content():
                             from trends import trends_component
                             state = me.state(State)
                 
-                            def on_main_tab_change(e: me.ButtonToggleChangeEvent):
-                                me.state(State).selected_main_tab = e.value
+                            def make_tab_click_handler(tab_val):
+                                def handler(e: me.ClickEvent):
+                                    st = me.state(State)
+                                    st.selected_main_tab = tab_val
+                                handler.__name__ = f"click_main_tab_{tab_val}"
+                                return handler
                 
-                            with me.box(style=me.Style(margin=me.Margin(bottom="16px"))):
-                                me.button_toggle(
-                                    value=state.selected_main_tab,
-                                    buttons=[
-                                        me.ButtonToggleButton(label="Status", value="Status"),
-                                        me.ButtonToggleButton(label="List", value="List"),
-                                        me.ButtonToggleButton(label="Charts", value="Charts"),
-                                    ],
-                                    on_change=on_main_tab_change,
-                                )
+                            with me.box(style=me.Style(display="flex", gap="8px", margin=me.Margin(bottom="12px"))):
+                                for tab in ["Status", "List", "Charts"]:
+                                    is_active = state.selected_main_tab == tab
+                                    with me.box(
+                                        style=me.Style(
+                                            padding=me.Padding.symmetric(vertical="6px", horizontal="12px"),
+                                            background="#1e293b" if is_active else "#f1f5f9",
+                                            color="#ffffff" if is_active else "#475569",
+                                            border_radius="4px",
+                                            cursor="pointer",
+                                            font_weight="600" if is_active else "500",
+                                            font_size="14px",
+                                        ),
+                                        on_click=make_tab_click_handler(tab),
+                                    ):
+                                        me.text(tab)
                 
                             if state.selected_main_tab == "List":
                                 try:

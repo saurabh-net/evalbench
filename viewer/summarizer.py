@@ -4,7 +4,6 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../evalbench")))
 
-import json
 import logging
 import threading
 import pandas as pd
@@ -109,6 +108,7 @@ def summarize_eval_scoring(results_dir):
     except Exception as e:
         logger.exception("Failed to summarize eval scoring")
         return f"Error during summarization: {e}"
+    return "Error: Unable to generate summary."
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
