@@ -70,7 +70,8 @@ class EvalServicer(eval_service_pb2_grpc.EvalServiceServicer):
         request: eval_request_pb2.PingRequest,
         context: grpc.ServicerContext,
     ) -> eval_response_pb2.EvalResponse:
-        return eval_response_pb2.EvalResponse(response="ack")
+        session_id = rpc_id_var.get()
+        return eval_response_pb2.EvalResponse(response="ack", session_id=session_id)
 
     async def Connect(
         self,
@@ -81,7 +82,7 @@ class EvalServicer(eval_service_pb2_grpc.EvalServiceServicer):
         session = SESSIONMANAGER.get_session(session_id)
         if session is not None:
             session["streaming_eval"] = request.streaming_eval
-        return eval_response_pb2.EvalResponse(response="ack")
+        return eval_response_pb2.EvalResponse(response="ack", session_id=session_id)
 
     async def EvalConfig(
         self,
@@ -99,7 +100,8 @@ class EvalServicer(eval_service_pb2_grpc.EvalServiceServicer):
         session = SESSIONMANAGER.get_session(rpc_id_var.get())
         SESSIONMANAGER.write_resource_files(rpc_id_var.get(), request.resources)
         set_session_configs(session, experiment_config)
-        return eval_response_pb2.EvalResponse(response="ack")
+        session_id = rpc_id_var.get()
+        return eval_response_pb2.EvalResponse(response="ack", session_id=session_id)
 
     async def ListEvalInputs(
         self,
@@ -195,7 +197,7 @@ class EvalServicer(eval_service_pb2_grpc.EvalServiceServicer):
             response = json.dumps({"job_id": job_id, "summary": summary})
         else:
             response = f"{job_id}"
-        return eval_response_pb2.EvalResponse(response=response)
+        return eval_response_pb2.EvalResponse(response=response, session_id=session_id)
 
 
 def _process_results(

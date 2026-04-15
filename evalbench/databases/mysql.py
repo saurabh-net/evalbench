@@ -221,7 +221,7 @@ class MySQLDB(DB):
                 self.max_attempts,
             )
         except ResourceExhaustedError as e:
-            logging.info(
+            logging.error(
                 "Resource Exhausted on MySQL DB. Giving up execution. Try reducing execs_per_minute."
             )
             return None, None, None
@@ -274,7 +274,7 @@ class MySQLDB(DB):
             self.tmp_dbs.remove(database_name)
         _, _, error = self.execute(f"DROP DATABASE {database_name};")
         if error:
-            logging.info(f"Could not delete database: {error}")
+            logging.error(f"Could not delete database: {error}")
 
     def ensure_database_exists(self, database_name: str) -> None:
         if getattr(self, "use_cloud_sql", False):
@@ -357,4 +357,4 @@ class MySQLDB(DB):
             self.tmp_users.remove(username)
         _, _, error = self.execute(DELETE_USER_QUERY.format(USERNAME=username))
         if error:
-            logging.info(f"Could not delete tmp user due to {error}")
+            logging.error(f"Could not delete tmp user due to {error}")

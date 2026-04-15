@@ -707,10 +707,7 @@ def list_view_component(directories, results_dir):
                     for x in summaries
                     if x.get("dataset", "N/A") == state.base_dataset
                 ]
-            
-            # Limit number of rows to show after filter/sort
-            summaries = summaries[:state.rows_to_show]
-    
+
             # Limit number of rows to show after filter/sort
             summaries = summaries[:state.rows_to_show]
     

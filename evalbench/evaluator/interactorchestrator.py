@@ -172,7 +172,7 @@ class InteractOrchestrator(Orchestrator):
                 )
                 record_successful_setup(progress_reporting)
             except Exception as e:
-                logging.info(
+                logging.error(
                     f"Skipping {query_type} queries as DB {database} "
                     + f"could not be setup properly in {dialect} due to {e}."
                 )
@@ -197,7 +197,7 @@ class InteractOrchestrator(Orchestrator):
                 total_scoring_results.extend(scoring_results)
                 break
             except Exception as e:
-                logging.info(
+                logging.error(
                     f"Failed to evaluate {sub_dataset_len} {query_type} queries "
                     + f"on DB {database} on {dialect}. Due to {e}"
                 )
