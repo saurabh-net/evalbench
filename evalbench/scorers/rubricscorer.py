@@ -12,12 +12,14 @@ class RubricScorer(comparator.Comparator):
     Evaluates whether the agent satisfied specific rubric criteria.
     """
 
-    def __init__(self, config: dict, global_models):
-        self.name = "rubric_scorer"
+    def __init__(self, config: dict, global_models, criterion: str = "", index: int = 0):
+        self.name = f"rubric_scorer_{index}"
+        self.criterion = criterion
         self.model_config = config.get("model_config") or ""
         if not self.model_config:
             raise ValueError("model_config is required for RubricScorer")
         self.model = get_generator(global_models, self.model_config)
+
 
     def compare(
         self,
@@ -47,9 +49,9 @@ class RubricScorer(comparator.Comparator):
 
         conversation_history = context.get("conversation_history", "[]")
         scenario = context.get("scenario", {})
-        rubric = scenario.get("rubric", [])
+        rubric = [self.criterion] if self.criterion else scenario.get("rubric", [])
 
-        if not rubric:
+        if not rubric or not rubric[0]:
             return 100.0, "No rubric defined for this scenario. Defaulting to PASS."
 
         rubric_str = "\n".join([f"- {criterion}" for criterion in rubric])
@@ -58,6 +60,7 @@ class RubricScorer(comparator.Comparator):
             rubric_items=rubric_str,
             conversation_history=conversation_history
         )
+
 
         try:
             response = self.model.generate(prompt)

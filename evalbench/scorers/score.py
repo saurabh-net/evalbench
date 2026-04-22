@@ -96,9 +96,27 @@ def compare(
             tokenconsumption.TokenConsumption(scorers["token_consumption"])
         )
     if "rubric_scorer" in scorers:
-        comparators.append(
-            rubricscorer.RubricScorer(scorers["rubric_scorer"], global_models)
-        )
+        import json
+        context_str = eval_output_item.get("eval_results", "")
+        try:
+            context = json.loads(context_str) if context_str else {}
+            rubric = context.get("scenario", {}).get("rubric", [])
+            if rubric:
+                for index, criterion in enumerate(rubric):
+                    comparators.append(
+                        rubricscorer.RubricScorer(
+                            scorers["rubric_scorer"], global_models, criterion=criterion, index=index
+                        )
+                    )
+            else:
+                comparators.append(
+                    rubricscorer.RubricScorer(scorers["rubric_scorer"], global_models)
+                )
+        except Exception:
+            comparators.append(
+                rubricscorer.RubricScorer(scorers["rubric_scorer"], global_models)
+            )
+
 
     for comp in comparators:
         score = 0

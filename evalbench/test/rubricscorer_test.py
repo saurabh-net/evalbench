@@ -8,11 +8,11 @@ class TestRubricScorer(unittest.TestCase):
     @patch('scorers.rubricscorer.get_generator')
     def test_compare_rubric_pass(self, mock_get_generator):
         mock_model = MagicMock()
-        mock_model.generate.return_value = "Passed criteria: 2/2\nAll criteria were satisfied."
+        mock_model.generate.return_value = "Passed criteria: 1/1\nCriterion 1 satifsied."
         mock_get_generator.return_value = mock_model
 
         config = {"model_config": "fake_config"}
-        scorer = RubricScorer(config, global_models={})
+        scorer = RubricScorer(config, global_models={}, criterion="Criterion 1", index=0)
 
         score, reason = scorer.compare(
             nl_prompt="",
@@ -23,22 +23,23 @@ class TestRubricScorer(unittest.TestCase):
             golden_error="",
             generated_query="",
             generated_execution_result="",
-            generated_eval_result='{"conversation_history": "[]", "scenario": {"rubric": ["Criterion 1", "Criterion 2"]}}',
+            generated_eval_result='{"conversation_history": "[]", "scenario": {"rubric": ["Criterion 1"]}}',
             generated_error=""
         )
 
         self.assertEqual(score, 100.0)
-        self.assertIn("Passed criteria: 2/2", reason)
+        self.assertIn("Passed criteria: 1/1", reason)
+        self.assertEqual(scorer.name, "rubric_scorer_0")
         mock_model.generate.assert_called_once()
 
     @patch('scorers.rubricscorer.get_generator')
     def test_compare_rubric_partial_fail(self, mock_get_generator):
         mock_model = MagicMock()
-        mock_model.generate.return_value = "Passed criteria: 1/2\nCriterion 1 was not satisfied."
+        mock_model.generate.return_value = "Passed criteria: 0/1\nCriterion 1 was not satisfied."
         mock_get_generator.return_value = mock_model
 
         config = {"model_config": "fake_config"}
-        scorer = RubricScorer(config, global_models={})
+        scorer = RubricScorer(config, global_models={}, criterion="Criterion 1", index=0)
 
         score, reason = scorer.compare(
             nl_prompt="",
@@ -49,13 +50,15 @@ class TestRubricScorer(unittest.TestCase):
             golden_error="",
             generated_query="",
             generated_execution_result="",
-            generated_eval_result='{"conversation_history": "[]", "scenario": {"rubric": ["Criterion 1", "Criterion 2"]}}',
+            generated_eval_result='{"conversation_history": "[]", "scenario": {"rubric": ["Criterion 1"]}}',
             generated_error=""
         )
 
-        self.assertEqual(score, 50.0)
-        self.assertIn("Passed criteria: 1/2", reason)
+        self.assertEqual(score, 0.0)
+        self.assertIn("Passed criteria: 0/1", reason)
+        self.assertEqual(scorer.name, "rubric_scorer_0")
         mock_model.generate.assert_called_once()
+
 
 
     @patch('scorers.rubricscorer.get_generator')
