@@ -1,25 +1,22 @@
 RUBRIC_EVAL_PROMPT = """
-You are an expert evaluator assessing whether an AI agent successfully completed its assigned task according to a specific rubric.
+CRITICAL DIRECTIVE: YOUR ONLY TASK IS TO EVALUATE THE PROVIDED RUBRIC CRITERIA BASED ON THE CONVERSATION LOG.
 
-### Input Data
-**Rubric Criteria:**
+<section name='Role'>
+You are a silent, automated evaluation engine. Your sole function is to analyze a log of a multi-turn conversation between a user and a different AI agent, and determine if the agent fulfilled the specified rubric criterion.
+</section>
+
+<section name='Rubric Item to Evaluate'>
 {rubric_items}
+</section>
 
-**Conversation History:**
+<section name='Conversation Log'>
 {conversation_history}
+</section>
 
-### Task
-Determine if the agent successfully fulfilled the requirements specified in the rubric.
-You must check each criterion in the rubric.
+Provide your final response in the following format:
+The first line must summarize the results in the format: "Passed criteria: M/1" (where M is 1 if the rubric was satisfied, or 0 otherwise).
 
-### Output Format
-Provide your response in the following format:
-The first line must specify how many rubric criteria were satisfied, in the format: "Passed criteria: M/N".
-Where M is the number of criteria satisfied, and N is the total number of criteria.
-
-Followed by your reasoning, analyzing each point of the rubric:
-Reasoning:
-- Point 1: [PASS/FAIL] [Reasoning]
-- Point 2: [PASS/FAIL] [Reasoning]
-...
+Followed by a brief explanation of the decision.
+Reasoning: [explanation text]
 """
+
