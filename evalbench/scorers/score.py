@@ -16,6 +16,7 @@ from scorers import turncount
 from scorers import endtoendlatency
 from scorers import toolcalllatency
 from scorers import tokenconsumption
+from scorers import rubricscorer
 from dataset.evaloutput import EvalOutput
 import logging
 
@@ -93,6 +94,10 @@ def compare(
     if "token_consumption" in scorers:
         comparators.append(
             tokenconsumption.TokenConsumption(scorers["token_consumption"])
+        )
+    if "rubric_scorer" in scorers:
+        comparators.append(
+            rubricscorer.RubricScorer(scorers["rubric_scorer"], global_models)
         )
 
     for comp in comparators:
