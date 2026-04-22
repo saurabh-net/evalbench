@@ -14,9 +14,8 @@ You must check each criterion in the rubric.
 
 ### Output Format
 Provide your response in the following format:
-The first line must be either "PASS" or "FAIL".
-Use "PASS" if and only if the agent satisfied ALL criteria in the rubric.
-Use "FAIL" if the agent failed any criterion.
+The first line must specify how many rubric criteria were satisfied, in the format: "Passed criteria: M/N".
+Where M is the number of criteria satisfied, and N is the total number of criteria.
 
 Followed by your reasoning, analyzing each point of the rubric:
 Reasoning:

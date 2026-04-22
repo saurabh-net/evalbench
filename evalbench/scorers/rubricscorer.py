@@ -3,6 +3,7 @@ import logging
 from scorers import comparator
 from generators.models import get_generator
 from scorers.prompt.rubricscorer import RUBRIC_EVAL_PROMPT
+import re
 import json
 
 
@@ -63,10 +64,20 @@ class RubricScorer(comparator.Comparator):
             response_text = getattr(
                 response, 'stdout', response) if response else ""
             if isinstance(response_text, str):
-                first_line = response_text.strip().split('\n')[0].upper()
-                score = 100.0 if "PASS" in first_line else 0.0
+                first_line = response_text.strip().split('\n')[0]
+                match = re.search(r'(\d+)/(\d+)', first_line)
+                if match:
+                    m = float(match.group(1))
+                    n = float(match.group(2))
+                    if n > 0:
+                        score = (m / n) * 100.0
+                        return min(max(score, 0.0), 100.0), response_text
+
+                # Fallback to PASS/FAIL check
+                score = 100.0 if "PASS" in first_line.upper() else 0.0
                 return score, response_text
             return 0.0, "Failed to parse LLM evaluation response."
         except Exception as e:
             logging.error(f'RubricScorer generation failed: {e}')
             return 0.0, f"Error calling model: {e}"
+
