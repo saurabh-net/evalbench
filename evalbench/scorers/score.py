@@ -99,7 +99,10 @@ def compare(
         import json
         context_str = eval_output_item.get("eval_results", "")
         try:
-            context = json.loads(context_str) if context_str else {}
+            if isinstance(context_str, dict):
+                context = context_str
+            else:
+                context = json.loads(context_str) if context_str else {}
             rubric = context.get("scenario", {}).get("rubric", [])
             if rubric:
                 for index, criterion in enumerate(rubric):
@@ -113,6 +116,7 @@ def compare(
                     rubricscorer.RubricScorer(scorers["rubric_scorer"], global_models)
                 )
         except Exception:
+
             comparators.append(
                 rubricscorer.RubricScorer(scorers["rubric_scorer"], global_models)
             )
