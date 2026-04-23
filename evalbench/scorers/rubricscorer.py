@@ -49,12 +49,17 @@ class RubricScorer(comparator.Comparator):
 
         conversation_history = context.get("conversation_history", "[]")
         scenario = context.get("scenario", {})
-        rubric = [self.criterion] if self.criterion else scenario.get("rubric", [])
+        criterion_to_evaluate = self.criterion
+        if not criterion_to_evaluate:
+            scenario_rubrics = scenario.get("rubric", [])
+            if scenario_rubrics and scenario_rubrics[0]:
+                criterion_to_evaluate = scenario_rubrics[0]
 
-        if not rubric or not rubric[0]:
+        if not criterion_to_evaluate:
             return 100.0, "No rubric defined for this scenario. Defaulting to PASS."
 
-        rubric_str = "\n".join([f"- {criterion}" for criterion in rubric])
+        rubric_str = f"- {criterion_to_evaluate}"
+
 
         prompt = RUBRIC_EVAL_PROMPT.format(
             rubric_items=rubric_str,
