@@ -97,6 +97,7 @@ def compare(
         )
     if "rubric_scorer" in scorers:
         import json
+
         context_str = eval_output_item.get("eval_results", "")
         try:
             if isinstance(context_str, dict):
@@ -120,7 +121,6 @@ def compare(
             comparators.append(
                 rubricscorer.RubricScorer(scorers["rubric_scorer"], global_models)
             )
-
 
     for comp in comparators:
         score = 0

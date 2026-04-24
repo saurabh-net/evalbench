@@ -59,8 +59,6 @@ class TestRubricScorer(unittest.TestCase):
         self.assertEqual(scorer.name, "rubric_scorer_0")
         mock_model.generate.assert_called_once()
 
-
-
     @patch('scorers.rubricscorer.get_generator')
     def test_compare_missing_rubric_defaults_pass(self, mock_get_generator):
         mock_model = MagicMock()

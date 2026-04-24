@@ -19,4 +19,3 @@ The first line must summarize the results in the format: "Passed criteria: M/1" 
 Followed by a brief explanation of the decision.
 Reasoning: [explanation text]
 """
-

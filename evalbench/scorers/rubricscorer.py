@@ -20,7 +20,6 @@ class RubricScorer(comparator.Comparator):
             raise ValueError("model_config is required for RubricScorer")
         self.model = get_generator(global_models, self.model_config)
 
-
     def compare(
         self,
         nl_prompt: Any,
@@ -60,12 +59,10 @@ class RubricScorer(comparator.Comparator):
 
         rubric_str = f"- {criterion_to_evaluate}"
 
-
         prompt = RUBRIC_EVAL_PROMPT.format(
             rubric_items=rubric_str,
             conversation_history=conversation_history
         )
-
 
         try:
             response = self.model.generate(prompt)
@@ -86,4 +83,3 @@ class RubricScorer(comparator.Comparator):
         except Exception as e:
             logging.error(f'RubricScorer generation failed: {e}')
             return 0.0, f"Error calling model: {e}"
-
