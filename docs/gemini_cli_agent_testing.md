@@ -603,7 +603,7 @@ These require a `model_config` pointing to an LLM for evaluation:
 | `goal_completion` | 0–100 | Uses an LLM to evaluate whether the agent accomplished the conversation plan's intent. Returns `100` for PASS, `0` for FAIL. |
 | `behavioral_metrics` | 0–100 | Evaluates hallucination rate and clarification rate in a single LLM pass. Starts at 100 and penalizes: **-50 per hallucination**, **-20 per unnecessary clarification**. |
 | `parameter_analysis` | 100 (qualitative) | Uses an LLM to provide qualitative feedback on tool parameters used. Always scores 100; the value is in the textual explanation. |
-| `rubric_scorer` | 0–100 | Uses an LLM to evaluate performance based on concrete user-supplied rubric criteria. |
+| `binary_rubric_scorer` | 0–100 | Uses an LLM to evaluate performance based on concrete user-supplied rubric criteria. |
 
 
 ### Deterministic Scorers
@@ -638,7 +638,7 @@ scorers:
     model_config: datasets/model_configs/gemini_2.5_pro_model.yaml
   parameter_analysis:
     model_config: datasets/model_configs/gemini_2.5_pro_model.yaml
-  rubric_scorer:
+  binary_rubric_scorer:
     model_config: datasets/model_configs/gemini_2.5_pro_model.yaml
 
 ### Example Rubric Scenario (`quick_dbt_test.json`)
@@ -674,7 +674,7 @@ simulated_user_model_config: gemini_2.5_pro_test_model.yaml
 scorers:
   goal_completion:
     model_config: gemini_2.5_pro_test_model.yaml
-  rubric_scorer:
+  binary_rubric_scorer:
     model_config: gemini_2.5_pro_test_model.yaml
   turn_count: {}
   executable: {}

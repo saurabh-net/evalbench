@@ -1,18 +1,20 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from scorers.rubricscorer import RubricScorer
+from scorers.binaryrubricscorer import BinaryRubricScorer
 
 
-class TestRubricScorer(unittest.TestCase):
+class TestBinaryRubricScorer(unittest.TestCase):
 
-    @patch('scorers.rubricscorer.get_generator')
+    @patch('scorers.binaryrubricscorer.get_generator')
     def test_compare_rubric_pass(self, mock_get_generator):
         mock_model = MagicMock()
-        mock_model.generate.return_value = "Passed criteria: 1/1\nCriterion 1 satifsied."
+        mock_model.generate.return_value = "PASS\nCriterion 1 satisfied."
         mock_get_generator.return_value = mock_model
 
         config = {"model_config": "fake_config"}
-        scorer = RubricScorer(config, global_models={}, criterion="Criterion 1", index=0)
+        scorer = BinaryRubricScorer(
+            config, global_models={}, criterion="Criterion 1", index=0
+        )
 
         score, reason = scorer.compare(
             nl_prompt="",
@@ -23,23 +25,30 @@ class TestRubricScorer(unittest.TestCase):
             golden_error="",
             generated_query="",
             generated_execution_result="",
-            generated_eval_result='{"conversation_history": "[]", "scenario": {"rubric": ["Criterion 1"]}}',
+            generated_eval_result=(
+                '{"conversation_history": "[]", '
+                '"scenario": {"rubric": ["Criterion 1"]}}'
+            ),
             generated_error=""
         )
 
         self.assertEqual(score, 100.0)
-        self.assertIn("Passed criteria: 1/1", reason)
-        self.assertEqual(scorer.name, "rubric_scorer_0")
+        self.assertIn("PASS", reason)
+        self.assertEqual(scorer.name, "binary_rubric_scorer_0")
         mock_model.generate.assert_called_once()
 
-    @patch('scorers.rubricscorer.get_generator')
+    @patch('scorers.binaryrubricscorer.get_generator')
     def test_compare_rubric_partial_fail(self, mock_get_generator):
         mock_model = MagicMock()
-        mock_model.generate.return_value = "Passed criteria: 0/1\nCriterion 1 was not satisfied."
+        mock_model.generate.return_value = (
+            "FAIL\nCriterion 1 was not satisfied."
+        )
         mock_get_generator.return_value = mock_model
 
         config = {"model_config": "fake_config"}
-        scorer = RubricScorer(config, global_models={}, criterion="Criterion 1", index=0)
+        scorer = BinaryRubricScorer(
+            config, global_models={}, criterion="Criterion 1", index=0
+        )
 
         score, reason = scorer.compare(
             nl_prompt="",
@@ -50,22 +59,25 @@ class TestRubricScorer(unittest.TestCase):
             golden_error="",
             generated_query="",
             generated_execution_result="",
-            generated_eval_result='{"conversation_history": "[]", "scenario": {"rubric": ["Criterion 1"]}}',
+            generated_eval_result=(
+                '{"conversation_history": "[]", '
+                '"scenario": {"rubric": ["Criterion 1"]}}'
+            ),
             generated_error=""
         )
 
         self.assertEqual(score, 0.0)
-        self.assertIn("Passed criteria: 0/1", reason)
-        self.assertEqual(scorer.name, "rubric_scorer_0")
+        self.assertIn("FAIL", reason)
+        self.assertEqual(scorer.name, "binary_rubric_scorer_0")
         mock_model.generate.assert_called_once()
 
-    @patch('scorers.rubricscorer.get_generator')
+    @patch('scorers.binaryrubricscorer.get_generator')
     def test_compare_missing_rubric_defaults_pass(self, mock_get_generator):
         mock_model = MagicMock()
         mock_get_generator.return_value = mock_model
 
         config = {"model_config": "fake_config"}
-        scorer = RubricScorer(config, global_models={})
+        scorer = BinaryRubricScorer(config, global_models={})
 
         score, reason = scorer.compare(
             nl_prompt="",
@@ -76,7 +88,9 @@ class TestRubricScorer(unittest.TestCase):
             golden_error="",
             generated_query="",
             generated_execution_result="",
-            generated_eval_result='{"conversation_history": "[]", "scenario": {}}',
+            generated_eval_result=(
+                '{"conversation_history": "[]", "scenario": {}}'
+            ),
             generated_error=""
         )
 

@@ -2,22 +2,24 @@ from typing import Tuple, Any
 import logging
 from scorers import comparator
 from generators.models import get_generator
-from scorers.prompt.rubricscorer import RUBRIC_EVAL_PROMPT
+from scorers.prompt.binaryrubricscorer import BINARY_RUBRIC_EVAL_PROMPT
 import re
 import json
 
 
-class RubricScorer(comparator.Comparator):
+class BinaryRubricScorer(comparator.Comparator):
     """
-    Evaluates whether the agent satisfied specific rubric criteria.
+    Evaluates whether the agent satisfied specific rubric criteria
+    with a binary pass/fail.
     """
 
-    def __init__(self, config: dict, global_models, criterion: str = "", index: int = 0):
-        self.name = f"rubric_scorer_{index}"
+    def __init__(self, config: dict, global_models,
+                 criterion: str = "", index: int = 0):
+        self.name = f"binary_rubric_scorer_{index}"
         self.criterion = criterion
         self.model_config = config.get("model_config") or ""
         if not self.model_config:
-            raise ValueError("model_config is required for RubricScorer")
+            raise ValueError("model_config is required for BinaryRubricScorer")
         self.model = get_generator(global_models, self.model_config)
 
     def compare(
@@ -55,11 +57,13 @@ class RubricScorer(comparator.Comparator):
                 criterion_to_evaluate = scenario_rubrics[0]
 
         if not criterion_to_evaluate:
-            return 100.0, "No rubric defined for this scenario. Defaulting to PASS."
+            return 100.0, (
+                "No rubric defined for this scenario. Defaulting to PASS."
+            )
 
         rubric_str = f"- {criterion_to_evaluate}"
 
-        prompt = RUBRIC_EVAL_PROMPT.format(
+        prompt = BINARY_RUBRIC_EVAL_PROMPT.format(
             rubric_items=rubric_str,
             conversation_history=conversation_history
         )
@@ -81,5 +85,5 @@ class RubricScorer(comparator.Comparator):
             return 0.0, "Failed to parse LLM evaluation response."
 
         except Exception as e:
-            logging.error(f'RubricScorer generation failed: {e}')
+            logging.error(f'BinaryRubricScorer generation failed: {e}')
             return 0.0, f"Error calling model: {e}"
