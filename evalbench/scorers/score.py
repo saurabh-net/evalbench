@@ -17,6 +17,7 @@ from scorers import endtoendlatency
 from scorers import toolcalllatency
 from scorers import tokenconsumption
 from scorers import binaryrubricscorer
+from scorers import dbtscorer
 from dataset.evaloutput import EvalOutput
 import logging
 
@@ -126,6 +127,10 @@ def compare(
                     scorers["binary_rubric_scorer"], global_models
                 )
             )
+    if "dbt_compile" in scorers:
+        comparators.append(dbtscorer.DbtCompileScorer(scorers["dbt_compile"]))
+    if "dbt_run" in scorers:
+        comparators.append(dbtscorer.DbtRunScorer(scorers["dbt_run"]))
 
     for comp in comparators:
         score = 0

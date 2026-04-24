@@ -617,6 +617,8 @@ These require no additional model:
 | `end_to_end_latency` | Milliseconds | Total latency = model API latency + tool execution latency. |
 | `tool_call_latency` | Milliseconds | Sum of all tool execution durations across all turns. |
 | `token_consumption` | Count | Total tokens consumed (input + output) across all turns. |
+| `dbt_compile` | 0 or 100 | Validates that the dbt project compiles successfully. Returns 100 for success, 0 for failure. |
+| `dbt_run` | 0 or 100 | Validates that the dbt project runs successfully. Returns 100 for success, 0 for failure. |
 
 ### Scorer Configuration Example
 
