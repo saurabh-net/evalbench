@@ -61,10 +61,8 @@ class BinaryRubricScorer(comparator.Comparator):
                 "No rubric defined for this scenario. Defaulting to PASS."
             )
 
-        rubric_str = f"- {criterion_to_evaluate}"
-
         prompt = BINARY_RUBRIC_EVAL_PROMPT.format(
-            rubric_items=rubric_str,
+            rubric_item=criterion_to_evaluate,
             conversation_history=conversation_history
         )
 
