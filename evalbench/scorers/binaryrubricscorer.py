@@ -52,7 +52,7 @@ class BinaryRubricScorer(comparator.Comparator):
         scenario = context.get("scenario", {})
         criterion_to_evaluate = self.criterion
         if not criterion_to_evaluate:
-            scenario_rubrics = scenario.get("rubric", [])
+            scenario_rubrics = scenario.get("binary_rubric", [])
             if scenario_rubrics and scenario_rubrics[0]:
                 criterion_to_evaluate = scenario_rubrics[0]
 

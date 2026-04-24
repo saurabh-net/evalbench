@@ -104,7 +104,7 @@ def compare(
                 context = context_str
             else:
                 context = json.loads(context_str) if context_str else {}
-            rubric = context.get("scenario", {}).get("rubric", [])
+            rubric = context.get("scenario", {}).get("binary_rubric", [])
             if rubric:
                 for index, criterion in enumerate(rubric):
                     comparators.append(

@@ -651,7 +651,7 @@ scorers:
       "starting_prompt": "Set up a bare minimum dbt project with a single model that selects 1. Create a `dbt_project.yml` and `profiles.yml` in the project directory so that `dbt compile` and `dbt run` will pass. In `profiles.yml`, configure a profile named `default` using `type: bigquery` and `method: oauth`. You can assume the environment has default credentials configured.",
       "conversation_plan": "The agent should set up a dbt project and run compile and run successfully.",
       "expected_trajectory": [],
-      "rubric": [
+      "binary_rubric": [
         "The agent created a profiles.yml with type: bigquery.",
         "The agent created a dbt_project.yml."
       ],

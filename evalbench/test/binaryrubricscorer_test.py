@@ -27,7 +27,7 @@ class TestBinaryRubricScorer(unittest.TestCase):
             generated_execution_result="",
             generated_eval_result=(
                 '{"conversation_history": "[]", '
-                '"scenario": {"rubric": ["Criterion 1"]}}'
+                '"scenario": {"binary_rubric": ["Criterion 1"]}}'
             ),
             generated_error=""
         )
@@ -61,7 +61,7 @@ class TestBinaryRubricScorer(unittest.TestCase):
             generated_execution_result="",
             generated_eval_result=(
                 '{"conversation_history": "[]", '
-                '"scenario": {"rubric": ["Criterion 1"]}}'
+                '"scenario": {"binary_rubric": ["Criterion 1"]}}'
             ),
             generated_error=""
         )
