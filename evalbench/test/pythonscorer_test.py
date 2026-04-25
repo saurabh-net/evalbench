@@ -16,11 +16,12 @@ class TestPythonScorer(unittest.TestCase):
 
         config = {"script_path": "dummy_script.py"}
         scorer = PythonScorer(config)
-        
+
         score, reason = scorer.compare(
             nl_prompt="", golden_query="", query_type="",
             golden_execution_result="", golden_eval_result="", golden_error="",
-            generated_query="", generated_execution_result="", generated_eval_result="", generated_error=""
+            generated_query="", generated_execution_result="",
+            generated_eval_result="", generated_error=""
         )
 
         self.assertEqual(score, 100.0)
@@ -37,11 +38,12 @@ class TestPythonScorer(unittest.TestCase):
 
         config = {"script_path": "dummy_script.py"}
         scorer = PythonScorer(config)
-        
+
         score, reason = scorer.compare(
             nl_prompt="", golden_query="", query_type="",
             golden_execution_result="", golden_eval_result="", golden_error="",
-            generated_query="", generated_execution_result="", generated_eval_result="", generated_error=""
+            generated_query="", generated_execution_result="",
+            generated_eval_result="", generated_error=""
         )
 
         self.assertEqual(score, 0.0)
@@ -57,11 +59,12 @@ class TestPythonScorer(unittest.TestCase):
 
         config = {"script_path": "dummy_script.py"}
         scorer = PythonScorer(config)
-        
+
         score, reason = scorer.compare(
             nl_prompt="", golden_query="", query_type="",
             golden_execution_result="", golden_eval_result="", golden_error="",
-            generated_query="", generated_execution_result="", generated_eval_result="", generated_error=""
+            generated_query="", generated_execution_result="",
+            generated_eval_result="", generated_error=""
         )
 
         self.assertEqual(score, 0.0)
@@ -73,15 +76,17 @@ class TestPythonScorer(unittest.TestCase):
 
         config = {"script_path": "dummy_script.py"}
         scorer = PythonScorer(config)
-        
+
         score, reason = scorer.compare(
             nl_prompt="", golden_query="", query_type="",
             golden_execution_result="", golden_eval_result="", golden_error="",
-            generated_query="", generated_execution_result="", generated_eval_result="", generated_error=""
+            generated_query="", generated_execution_result="",
+            generated_eval_result="", generated_error=""
         )
 
         self.assertEqual(score, 0.0)
         self.assertIn("FAIL: 'uv' command not found", reason)
+
 
 if __name__ == '__main__':
     unittest.main()

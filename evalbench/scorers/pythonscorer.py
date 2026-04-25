@@ -5,6 +5,7 @@ import subprocess
 import json
 import os
 
+
 class PythonScorer(comparator.Comparator):
     """
     A general scorer that delegates to an external Python script via `uv run`.
@@ -30,7 +31,7 @@ class PythonScorer(comparator.Comparator):
         generated_eval_result: Any,
         generated_error: Any,
     ) -> Tuple[float, str]:
-        
+
         # Prepare input data
         input_data = {
             "nl_prompt": nl_prompt,
@@ -44,7 +45,7 @@ class PythonScorer(comparator.Comparator):
             "generated_eval_result": generated_eval_result,
             "generated_error": generated_error,
         }
-        
+
         try:
             json_input = json.dumps(input_data)
         except Exception as e:
@@ -52,7 +53,7 @@ class PythonScorer(comparator.Comparator):
 
         # Construct command
         command = ["uv", "run", self.script_path]
-        
+
         try:
             logging.info(f"Running PythonScorer script: {self.script_path}")
             result = subprocess.run(
@@ -62,10 +63,13 @@ class PythonScorer(comparator.Comparator):
                 text=True,
                 check=False
             )
-            
+
             if result.returncode != 0:
-                return 0.0, f"FAIL: Script failed with exit code {result.returncode}. Stderr: {result.stderr}"
-            
+                return 0.0, (
+                    f"FAIL: Script failed with exit code {result.returncode}. "
+                    f"Stderr: {result.stderr}"
+                )
+
             stdout = result.stdout.strip()
             try:
                 response = json.loads(stdout)
@@ -73,11 +77,17 @@ class PythonScorer(comparator.Comparator):
                 reason = response.get("reason", "No reason provided")
                 return score, reason
             except json.JSONDecodeError:
-                return 0.0, f"FAIL: Failed to parse JSON from script output. Output: {stdout}"
+                return 0.0, (
+                    f"FAIL: Failed to parse JSON from script output. "
+                    f"Output: {stdout}"
+                )
             except Exception as e:
                 return 0.0, f"FAIL: Error processing script output: {e}"
 
         except FileNotFoundError:
-            return 0.0, "FAIL: 'uv' command not found in PATH. Please ensure 'uv' is installed."
+            return 0.0, (
+                "FAIL: 'uv' command not found in PATH. "
+                "Please ensure 'uv' is installed."
+            )
         except Exception as e:
             return 0.0, f"FAIL: Exception running script: {e}"
