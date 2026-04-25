@@ -5,16 +5,19 @@ import subprocess
 import os
 import shutil
 
+
 def _find_project_dir(start_dir: str, filename: str) -> str:
-    """Searches for a file starting from start_dir and returns its directory."""
+    """Searches for a file from start_dir and returns its directory."""
     for root, dirs, files in os.walk(start_dir):
         if filename in files:
             return root
-    raise FileNotFoundError(f"Could not find {filename} in {start_dir}")
+        raise FileNotFoundError(f"Could not find {filename} in {start_dir}")
+
 
 def _has_profiles_yml(project_dir: str) -> bool:
     """Checks if profiles.yml exists in the project directory."""
     return os.path.exists(os.path.join(project_dir, "profiles.yml"))
+
 
 class DbtBaseScorer(comparator.Comparator):
     """Base class for dbt scorers."""
@@ -26,7 +29,8 @@ class DbtBaseScorer(comparator.Comparator):
     def _check_dbt(self) -> bool:
         return shutil.which("dbt") is not None
 
-    def _run_dbt_command(self, command_parts: list[str], project_dir: str) -> Tuple[float, str]:
+    def _run_dbt_command(self, command_parts: list[str],
+                         project_dir: str) -> Tuple[float, str]:
         if not self._check_dbt():
             return 0.0, "dbt not setup, unable to run the scorer"
 
@@ -44,6 +48,7 @@ class DbtBaseScorer(comparator.Comparator):
                 return 0.0, f"FAIL: {result.stderr or result.stdout}"
         except Exception as e:
             return 0.0, f"Exception running dbt: {e}"
+
 
 class DbtCompileScorer(DbtBaseScorer):
     """Validates that the dbt project compiles successfully."""
@@ -77,6 +82,7 @@ class DbtCompileScorer(DbtBaseScorer):
             return 0.0, f"FAIL: {e}"
         except Exception as e:
             return 0.0, f"FAIL: Exception: {e}"
+
 
 class DbtRunScorer(DbtBaseScorer):
     """Validates that the dbt project runs successfully."""
