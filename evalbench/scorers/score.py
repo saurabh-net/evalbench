@@ -17,6 +17,7 @@ from scorers import endtoendlatency
 from scorers import toolcalllatency
 from scorers import tokenconsumption
 from scorers import binaryrubricscorer
+from scorers import pythonscorer
 from dataset.evaloutput import EvalOutput
 import logging
 
@@ -126,6 +127,8 @@ def compare(
                     scorers["binary_rubric_scorer"], global_models
                 )
             )
+    if "python_scorer" in scorers:
+        comparators.append(pythonscorer.PythonScorer(scorers["python_scorer"]))
 
     for comp in comparators:
         score = 0
