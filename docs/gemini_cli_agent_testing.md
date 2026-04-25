@@ -687,7 +687,7 @@ if __name__ == "__main__":
     main()
 ```
 
-A sample validator is available at `evalbench/scorers/examples/sample_validator.py`.
+A sample validator is available at `evalbench/scorers/examples/sample_python_validator.py`.
 
 ### Example Rubric Scenario (`quick_dbt_test.json`)
 
