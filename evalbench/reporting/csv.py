@@ -1,5 +1,5 @@
 import logging
-from reporting.report import Reporter, STORETYPE
+from .report import Reporter, STORETYPE
 import os
 import sys
 

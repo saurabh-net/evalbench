@@ -1,7 +1,7 @@
 from google.cloud import bigquery
 import logging
 import pandas as pd
-from reporting.report import Reporter, STORETYPE
+from .report import Reporter, STORETYPE
 from util.gcp import get_gcp_project
 import urllib.parse
 
