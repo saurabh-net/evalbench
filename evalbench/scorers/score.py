@@ -127,9 +127,17 @@ def compare(
                     scorers["binary_rubric_scorer"], global_models
                 )
             )
+    import os
     for key, scorer_config in scorers.items():
         if key.startswith("python_scorer"):
-            comparators.append(pythonscorer.PythonScorer(scorer_config, name=key))
+            custom_name = scorer_config.get("scorer_name")
+            if not custom_name:
+                script_path = scorer_config.get("script_path")
+                if script_path:
+                    custom_name = os.path.splitext(os.path.basename(script_path))[0]
+                else:
+                    custom_name = key
+            comparators.append(pythonscorer.PythonScorer(scorer_config, name=custom_name))
 
     for comp in comparators:
         score = 0
