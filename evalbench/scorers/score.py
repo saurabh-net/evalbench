@@ -127,8 +127,9 @@ def compare(
                     scorers["binary_rubric_scorer"], global_models
                 )
             )
-    if "python_scorer" in scorers:
-        comparators.append(pythonscorer.PythonScorer(scorers["python_scorer"]))
+    for key, scorer_config in scorers.items():
+        if key.startswith("python_scorer"):
+            comparators.append(pythonscorer.PythonScorer(scorer_config, name=key))
 
     for comp in comparators:
         score = 0

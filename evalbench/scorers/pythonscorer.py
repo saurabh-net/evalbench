@@ -11,9 +11,9 @@ class PythonScorer(comparator.Comparator):
     A general scorer that delegates to an external Python script via `uv run`.
     """
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, name: str = "python_scorer"):
         super().__init__(config)
-        self.name = "python_scorer"
+        self.name = name
         self.script_path = config.get("script_path")
         if not self.script_path:
             raise ValueError("script_path is required for PythonScorer")

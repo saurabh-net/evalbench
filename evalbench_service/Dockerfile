@@ -24,6 +24,9 @@ COPY . evalbench
 WORKDIR evalbench
 RUN uv pip install --system --break-system-packages -r requirements.txt
 RUN uv pip install --system --break-system-packages ./viewer
+RUN echo '# /// script\n# dependencies = ["dbt-core", "dbt-bigquery", "pyyaml", "rich"]\n# ///\nprint("Warm up uv cache")' > /tmp/warm_up.py && \
+    uv run --isolated /tmp/warm_up.py && \
+    rm /tmp/warm_up.py
 RUN uv pip install --system --break-system-packages .
 
 # Create a non-root user for Claude Code. It refuses
