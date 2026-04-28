@@ -129,7 +129,7 @@ def compare(
                 )
             )
     for key, scorer_config in scorers.items():
-        if key.startswith("python_scorer"):
+        if key == "python_scorer":
             custom_name = scorer_config.get("scorer_name")
             if custom_name and isinstance(custom_name, str):
                 custom_name = custom_name.strip()
