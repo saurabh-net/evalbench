@@ -52,7 +52,7 @@ class PythonScorer(comparator.Comparator):
             return 0.0, f"FAIL: Failed to serialize input to JSON: {e}"
 
         # Construct command
-        command = ["uv", "run", self.script_path]
+        command = ["uv", "run", "--isolated", self.script_path]
 
         try:
             logging.info(f"Running PythonScorer script: {self.script_path}")
