@@ -110,90 +110,118 @@ class AgentEvaluator:
         simulated_user: Any = None
     ):
         """Processes a single scenario."""
-        current_prompt = scenario["starting_prompt"]
-        env = scenario.get("env", {})
-        max_turns = scenario.get("max_turns", 1)
-        conversation_plan = scenario.get("conversation_plan", "")
-        conversation_history = []
-        accumulated_tools = []
-        last_result = None
+        import tempfile
+        import shutil
+        import os
 
-        session_id = None
-        for turn in range(max_turns):
-            logging.info(
-                f"Turn {turn + 1}/{max_turns} - Prompt: {current_prompt}")
-            if isinstance(self.generator, (GeminiCliGenerator, ClaudeCodeGenerator)):
-                if isinstance(self.generator, ClaudeCodeGenerator):
-                    cli_cmd = self.generator.create_command(
-                        cli=self.agent_version,
-                        prompt=current_prompt,
-                        env=env,
-                        resume=(turn > 0),
-                        session_id=session_id
-                    )
+        scenario_cwd = tempfile.mkdtemp(prefix=f"evalbench_scenario_{scenario.get('id', 'unknown')}_")
+        
+        # Initialize isolated git repo to support git-based validators/scorers
+        try:
+            subprocess.run(["git", "init"], cwd=scenario_cwd, capture_output=True, check=False)
+            subprocess.run(["git", "config", "user.name", "EvalBench User"], cwd=scenario_cwd, capture_output=True, check=False)
+            subprocess.run(["git", "config", "user.email", "user@evalbench.local"], cwd=scenario_cwd, capture_output=True, check=False)
+            with open(os.path.join(scenario_cwd, ".gitignore"), "w") as f:
+                f.write(".venv\n")
+            subprocess.run(["git", "add", ".gitignore"], cwd=scenario_cwd, capture_output=True, check=False)
+            subprocess.run(["git", "commit", "-m", "Initial commit"], cwd=scenario_cwd, capture_output=True, check=False)
+        except Exception as e:
+            logging.warning(f"Failed to initialize git in temporary scenario directory: {e}")
+
+        scenario["project_dir"] = scenario_cwd
+        
+        try:
+            current_prompt = scenario["starting_prompt"]
+            env = scenario.get("env", {})
+            max_turns = scenario.get("max_turns", 1)
+            conversation_plan = scenario.get("conversation_plan", "")
+            conversation_history = []
+            accumulated_tools = []
+            last_result = None
+
+            session_id = None
+            for turn in range(max_turns):
+                logging.info(
+                    f"Turn {turn + 1}/{max_turns} - Prompt: {current_prompt}")
+                if isinstance(self.generator, (GeminiCliGenerator, ClaudeCodeGenerator)):
+                    if isinstance(self.generator, ClaudeCodeGenerator):
+                        cli_cmd = self.generator.create_command(
+                            cli=self.agent_version,
+                            prompt=current_prompt,
+                            env=env,
+                            resume=(turn > 0),
+                            session_id=session_id,
+                            cwd=scenario_cwd
+                        )
+                    else:
+                        cli_cmd = self.generator.create_command(
+                            cli=self.agent_version,
+                            prompt=current_prompt,
+                            env=env,
+                            resume=(turn > 0),
+                            cwd=scenario_cwd
+                        )
+                    try:
+                        result = self.generator.safe_generate(cli_cmd)
+                        if isinstance(self.generator, ClaudeCodeGenerator) and result.stdout:
+                            parsed = self.generator.parse_response(result.stdout)
+                            if parsed.get("session_id"):
+                                session_id = parsed["session_id"]
+                    except Exception as e:
+                        logging.error(f'CLI execution failed: {e}')
+                        result = subprocess.CompletedProcess(
+                            args=[self.agent_version], returncode=1, stdout='', stderr=str(e)
+                        )
                 else:
-                    cli_cmd = self.generator.create_command(
-                        cli=self.agent_version,
-                        prompt=current_prompt,
-                        env=env,
-                        resume=(turn > 0)
-                    )
-                try:
-                    result = self.generator.safe_generate(cli_cmd)
-                    if isinstance(self.generator, ClaudeCodeGenerator) and result.stdout:
-                        parsed = self.generator.parse_response(result.stdout)
-                        if parsed.get("session_id"):
-                            session_id = parsed["session_id"]
-                except Exception as e:
-                    logging.error(f'CLI execution failed: {e}')
-                    result = subprocess.CompletedProcess(
-                        args=[self.agent_version], returncode=1, stdout='', stderr=str(e)
-                    )
-            else:
-                try:
-                    result = self.generator.generate(current_prompt)
-                except Exception as e:
-                    logging.error(f'LLM generation failed: {e}')
-                    result = str(e)
+                    try:
+                        result = self.generator.generate(current_prompt)
+                    except Exception as e:
+                        logging.error(f'LLM generation failed: {e}')
+                        result = str(e)
 
-            last_result = result
+                last_result = result
 
-            self._log_cli_result(turn, max_turns, result)
+                self._log_cli_result(turn, max_turns, result)
 
-            tools = []
-            if isinstance(self.generator, (GeminiCliGenerator, ClaudeCodeGenerator)):
-                tools = self.generator.extract_tools(result.stdout)
-            accumulated_tools.extend(tools)
+                tools = []
+                if isinstance(self.generator, (GeminiCliGenerator, ClaudeCodeGenerator)):
+                    tools = self.generator.extract_tools(result.stdout)
+                accumulated_tools.extend(tools)
 
-            conversation_history.append({
-                "user": current_prompt,
-                "agent": result.stdout
-            })
+                conversation_history.append({
+                    "user": current_prompt,
+                    "agent": result.stdout
+                })
 
-            if turn < max_turns - 1:
-                if simulated_user:
-                    next_response = simulated_user.get_next_response(
-                        conversation_plan,
-                        conversation_history,
-                        result.stdout
-                    )
-                    if "TERMINATE" in next_response:
-                        logging.info("Simulated user terminated conversation.")
+                if turn < max_turns - 1:
+                    if simulated_user:
+                        next_response = simulated_user.get_next_response(
+                            conversation_plan,
+                            conversation_history,
+                            result.stdout
+                        )
+                        if "TERMINATE" in next_response:
+                            logging.info("Simulated user terminated conversation.")
+                            break
+                        current_prompt = next_response
+                    else:
                         break
-                    current_prompt = next_response
-                else:
-                    break
 
-        if last_result:
-            self._finalize_scenario(
-                scenario,
-                last_result,
-                conversation_history,
-                accumulated_tools,
-                eval_result,
-                job_id,
-                metadata
-            )
+            if last_result:
+                self._finalize_scenario(
+                    scenario,
+                    last_result,
+                    conversation_history,
+                    accumulated_tools,
+                    eval_result,
+                    job_id,
+                    metadata
+                )
+        finally:
+            try:
+                shutil.rmtree(scenario_cwd, ignore_errors=True)
+            except Exception:
+                pass
 
     def _log_cli_result(self, turn: int, max_turns: int, result: subprocess.CompletedProcess):
         generator_name = self.generator.name
