@@ -271,10 +271,13 @@ class AgentEvaluator:
 
         # Upload generated scenario code artifacts to GCS if configured
         reporting_config = self.config.get("reporting", {})
+        logging.info(f"Scenario {scenario['id']}: Checking GCS upload. Reporting Config: {reporting_config}")
         if "gcs" in reporting_config:
+            logging.info(f"Scenario {scenario['id']}: GCS config found: {reporting_config['gcs']}")
             try:
                 from reporting.gcs import upload_scenario_artifacts
                 scenario_cwd = scenario.get("project_dir")
+                logging.info(f"Scenario {scenario['id']}: scenario_cwd = {scenario_cwd}")
                 if scenario_cwd:
                     upload_scenario_artifacts(
                         reporting_config=reporting_config["gcs"],

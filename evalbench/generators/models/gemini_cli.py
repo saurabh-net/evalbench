@@ -838,7 +838,7 @@ class GeminiCliGenerator(QueryGenerator):
             ]
         )
 
-        result = self._execute_cli_command(command, env=env)
+        result = self._execute_cli_command(command, env=env, cwd=cli_cmd.cwd)
         if result.returncode == 0 and result.stdout:
             result.stdout = self._parse_stream_json(result.stdout)
 

@@ -116,10 +116,16 @@ def upload_scenario_artifacts(reporting_config: dict, job_id: str, scenario_id: 
     dest_prefix = f"{base_path}/{job_id}/{scenario_id}" if base_path else f"{job_id}/{scenario_id}"
 
     try:
+        logging.info(f"Scenario {scenario_id}: Files in scenario_cwd before add: {os.listdir(scenario_cwd)}")
+        
+        # Add untracked files to the index so they are included in the diff
+        subprocess.run(["git", "add", "-A"], cwd=scenario_cwd, capture_output=True, check=False)
+        
         # Capture the git diff of the scenario's ephemeral workspace
         res = subprocess.run(["git", "diff", "HEAD"], capture_output=True, text=True, cwd=scenario_cwd)
         git_diff = res.stdout
 
+        logging.info(f"Scenario {scenario_id}: Captured git diff. Length: {len(git_diff if git_diff else '')} bytes. Stderr: {res.stderr}")
         if git_diff:
             client = storage.Client()
             bucket = client.bucket(bucket_name)
