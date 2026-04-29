@@ -1,0 +1,19 @@
+dataset_config: datasets/test_collision.json
+dataset_format: gemini-cli-format
+
+orchestrator: geminicli
+model_config: gemini_cli_test_model.yaml
+simulated_user_model_config: gemini_2.5_pro_test_model.yaml
+
+runners:
+  agent_runners: 2
+
+scorers:
+  turn_count: {}
+
+reporting:
+  csv:
+    output_directory: 'results'
+  gcs:
+    bucket: 'bq-dataworkeragent-test-evalbench-skills'
+    output_directory: 'artifacts'
