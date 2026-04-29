@@ -1,5 +1,6 @@
 from .csv import CsvReporter
 from .bqstore import BigQueryReporter
+from .gcs import GcsArtifactReporter
 from .report import Reporter
 
 
@@ -14,4 +15,8 @@ def get_reporters(reporting_config, job_id, run_time) -> list[Reporter]:
     if "csv" in reporting_config:
         reporters.append(CsvReporter(
             reporting_config["csv"], job_id, run_time))
+    if "gcs" in reporting_config:
+        reporters.append(
+            GcsArtifactReporter(reporting_config["gcs"], job_id, run_time)
+        )
     return reporters

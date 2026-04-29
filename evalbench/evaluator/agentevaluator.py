@@ -241,4 +241,22 @@ class AgentEvaluator:
         )
         score_work.run()
 
+        # Upload generated scenario code artifacts to GCS if configured
+        reporting_config = self.config.get("reporting", {})
+        if "gcs" in reporting_config:
+            try:
+                import os
+                from reporting.gcs import upload_scenario_artifacts
+                # In non-isolated mode, the working directory is the repo root
+                scenario_cwd = scenario.get("project_dir") or os.getcwd()
+                if scenario_cwd:
+                    upload_scenario_artifacts(
+                        reporting_config=reporting_config["gcs"],
+                        job_id=job_id,
+                        scenario_id=scenario["id"],
+                        scenario_cwd=scenario_cwd
+                    )
+            except Exception as e:
+                logging.warning(f"Failed to upload scenario artifacts to GCS: {e}")
+
         eval_result.agent_results.append(eval_output_data)
