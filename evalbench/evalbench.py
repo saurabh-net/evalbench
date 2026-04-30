@@ -17,6 +17,7 @@ import os
 import sys
 import yaml
 import multiprocessing
+from util.scriptrunner import run_script
 
 try:
     import google.colab  # type: ignore
@@ -61,6 +62,20 @@ def eval(experiment_config: str):
             config, db_configs, setup_config, report_progress=True
         )
 
+        # Resolve session directory for local standalone logs
+        reporting_config = config.get("reporting") or {}
+        csv_config = reporting_config.get("csv") or {}
+        base_output_dir = csv_config.get("output_directory", "results")
+        session_dir = os.path.abspath(os.path.join(base_output_dir, evaluator.job_id))
+
+        set_up_script = config.get("set_up_script")
+        if set_up_script:
+            if os.path.exists(set_up_script):
+                logging.info("Executing set_up_script '%s'", set_up_script)
+                run_script(set_up_script, session_dir, "setup")
+            else:
+                logging.error("Cannot run set_up_script, file not found at '%s'", set_up_script)
+
         # Run evaluations
         evaluator.evaluate(flatten_dataset(dataset))
         job_id, run_time, results_tf, scores_tf = evaluator.process()
@@ -98,6 +113,15 @@ def eval(experiment_config: str):
             reporter.print_dashboard_links()
 
         print(f"Finished Job ID {job_id}")
+
+        tear_down_script = config.get("tear_down_script")
+        if tear_down_script:
+            if os.path.exists(tear_down_script):
+                logging.info("Executing tear_down_script '%s'", tear_down_script)
+                run_script(tear_down_script, session_dir, "teardown")
+            else:
+                logging.error("Cannot run tear_down_script, file not found at '%s'", tear_down_script)
+
         return True
     except Exception as e:
         logging.exception(e)

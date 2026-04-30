@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import os
 from collections.abc import AsyncIterator
 from typing import AsyncGenerator
 
@@ -20,6 +21,8 @@ from reporting import get_reporters
 import reporting.analyzer as analyzer
 from util.config import update_google3_relative_paths, set_session_configs, config_to_df
 from util import get_SessionManager
+from util.scriptrunner import run_script
+from util.sessionmgr import SESSION_RESOURCES_PATH
 from dataset.dataset import load_dataset_from_json
 from evalproto import (
     eval_request_pb2,
@@ -132,6 +135,15 @@ class EvalServicer(eval_service_pb2_grpc.EvalServiceServicer):
             return eval_response_pb2.EvalResponse()
 
         config["session_id"] = session_id
+        session_dir = os.path.join(SESSION_RESOURCES_PATH, session_id)
+
+        set_up_script = config.get("set_up_script")
+        if set_up_script:
+            if os.path.exists(set_up_script):
+                logging.info(f"Eval: Executing set_up_script '{set_up_script}'")
+                run_script(set_up_script, session_dir, "setup")
+            else:
+                logging.error(f"Eval: Cannot run set_up_script, file not found at '{set_up_script}'")
 
         streaming_eval = session.get("streaming_eval", False) if session else False
         loop = asyncio.get_event_loop()
@@ -197,6 +209,15 @@ class EvalServicer(eval_service_pb2_grpc.EvalServiceServicer):
             response = json.dumps({"job_id": job_id, "summary": summary})
         else:
             response = f"{job_id}"
+
+        tear_down_script = config.get("tear_down_script")
+        if tear_down_script:
+            if os.path.exists(tear_down_script):
+                logging.info(f"Eval: Executing tear_down_script '{tear_down_script}'")
+                run_script(tear_down_script, session_dir, "teardown")
+            else:
+                logging.error(f"Eval: Cannot run tear_down_script, file not found at '{tear_down_script}'")
+
         return eval_response_pb2.EvalResponse(response=response, session_id=session_id)
 
 

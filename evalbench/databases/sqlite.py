@@ -1,8 +1,12 @@
 from sqlalchemy.pool import NullPool
+import sqlalchemy
 from sqlalchemy import text, MetaData
 from sqlalchemy.engine.base import Connection
 import logging
 import sqlparse
+import os
+import sqlite3
+import shutil
 from .db import DB
 from .util import (
     with_cache_execute,
@@ -270,7 +274,7 @@ class SQLiteDB(DB):
             raise RuntimeError(f"Could not insert data into database: {error}")
 
     def _format_boolean_value(self, val: str) -> Any:
-        return "true" if val == "true" else "false"
+        return 1 if val == "true" else 0
 
     ######################################################
     #####################################################
