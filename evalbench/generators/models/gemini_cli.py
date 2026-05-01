@@ -29,7 +29,7 @@ class GeminiCliGenerator(QueryGenerator):
         # If running via eval_server.py (gRPC), use session-specific path in shared volume
         if sys.argv[0].endswith("eval_server.py"):
             session_id = querygenerator_config.get("session_id", "default")
-            self.fake_home = os.path.join("/tmp_sessions", session_id, "fake_home")
+            self.fake_home = os.path.join("./tmp_sessions", session_id, "fake_home")
         else:
             self.fake_home = os.path.abspath(os.path.join(".venv", "fake_home"))
 
