@@ -231,7 +231,8 @@ class AgentEvaluator:
             "scenario": scenario,
             "accumulated_tools": accumulated_tools,
             "job_id": job_id,
-            "metadata": metadata
+            "metadata": metadata,
+            "working_dir": self.generator.fake_home
         }
 
         score_work = AgentScoreWork(
